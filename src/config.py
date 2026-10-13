@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 from pathlib import Path
 from typing import Final
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import polars as pl
 
@@ -96,6 +97,31 @@ CITY_SLUGS: Final[tuple[str, ...]] = tuple(city.slug for city in CITIES)
 
 class ConfigurationError(ValueError):
     """Raised when the caller asks for an unknown city, dataset or date range."""
+
+
+def ensure_timezone_database() -> None:
+    """Fail fast when the IANA timezone database is unavailable.
+
+    Every frame this pipeline builds carries timezone-aware UTC timestamps. Turning
+    those into Python objects goes through :mod:`zoneinfo`, which reads a system
+    database on Linux but has none on Windows or in slim containers - there it needs
+    the `tzdata` wheel instead. When that wheel is missing, polars raises a Rust-level
+    `PanicException` from deep inside its conversion layer, which is impossible to
+    diagnose from the traceback. This check converts that into an actionable error.
+
+    Raises
+    ------
+    ConfigurationError
+        If no timezone database can be loaded.
+    """
+    try:
+        ZoneInfo("UTC")
+    except (ZoneInfoNotFoundError, ImportError, ValueError) as exc:
+        raise ConfigurationError(
+            "The IANA timezone database is not available to Python, so timezone-aware "
+            "timestamps cannot be materialised. Install the 'tzdata' package "
+            "(pip install tzdata); it is pinned in requirements.txt."
+        ) from exc
 
 
 def get_city(slug: str) -> City:

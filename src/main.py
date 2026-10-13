@@ -14,6 +14,7 @@ from src.analytics import AnalyticsError, AnalyticsReport, run_analytics
 from src.config import (
     DEFAULT_DATA_DIR,
     ConfigurationError,
+    ensure_timezone_database,
     get_city,
     resolve_cities,
     utc_today,
@@ -178,6 +179,7 @@ class RunReport:
 
 def run(args: argparse.Namespace, today: date | None = None) -> tuple[int, RunReport]:
     """Execute the pipeline. Returns an exit code and the run report."""
+    ensure_timezone_database()
     reference = today or utc_today()
     data_dir = Path(args.data_dir).expanduser().resolve()
     cities = resolve_cities(resolve_city_slugs(args.cities))

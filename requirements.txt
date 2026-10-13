@@ -4,7 +4,10 @@ duckdb==1.5.6
 polars==2.0.0
 pyarrow==26.0.0
 requests==2.34.2
+# DuckDB needs pytz to convert TIMESTAMPTZ values into Python datetimes.
 pytz==2026.5
+# zoneinfo needs an IANA database; Windows and slim images ship none.
+tzdata==2026.5
 
 # Development / test dependencies (install with: pip install -r requirements.txt)
 pytest==9.1.1

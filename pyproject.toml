@@ -14,6 +14,8 @@ keywords = ["etl", "parquet", "duckdb", "open-meteo", "weather", "github-actions
 classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Topic :: Scientific/Engineering :: Atmospheric Science",
 ]
 # Pins are the exact versions the test suite was verified against.
@@ -24,6 +26,9 @@ dependencies = [
   "requests==2.34.2",
   # DuckDB needs pytz to convert TIMESTAMPTZ values into Python datetimes.
   "pytz==2026.5",
+  # zoneinfo (used by polars) needs an IANA database; Windows and slim
+  # container images ship none, which surfaces as a ZoneInfoNotFoundError.
+  "tzdata==2026.5",
 ]
 
 [project.optional-dependencies]

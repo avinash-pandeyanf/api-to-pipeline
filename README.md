@@ -6,7 +6,7 @@ forecasts and measured observations for three major cities from the
 types the payloads, writes snappy-compressed Hive-partitioned Parquet, and uses **DuckDB**
 to publish an analysis-ready summary. GitHub Actions refreshes everything every 6 hours.
 
-Python 3.11+ | requests + polars + pyarrow | DuckDB | pytest | 151 tests
+Python 3.11-3.14 | requests + polars + pyarrow | DuckDB | pytest | 161 tests
 
 ---
 
@@ -175,6 +175,13 @@ pip install -e ".[dev]"
 
 No API key, token or secret of any kind is required.
 
+**Two platform notes.** The suite and the pipeline are verified on Python 3.11-3.14.
+On Windows (and in slim container images) Python ships **no IANA timezone database**, so
+two non-obvious dependencies are pinned for you: `tzdata` lets `zoneinfo` resolve
+`UTC` for timezone-aware timestamps, and `pytz` lets DuckDB convert `TIMESTAMPTZ`
+values. Missing either one produces a confusing low-level error, so the pipeline checks
+for the timezone database up front and tells you what to install.
+
 ### 5.2 Run
 
 ```bash
@@ -191,7 +198,7 @@ python -m src.main --date 2026-10-01 --cities london
 ### 5.3 Test
 
 ```bash
-python -m pytest -q                       # 151 tests, no network access
+python -m pytest -q                       # 161 tests, no network access
 python -m pytest -q -m "not integration"  # skip filesystem/DuckDB integration tests
 python -m pytest --cov=src --cov-report=term-missing
 ```
@@ -310,6 +317,7 @@ is integral). Transform, load and DuckDB all pick it up automatically.
 | `Analytics stage skipped: No Parquet files` | The lake is empty because every request failed; fix extraction first. |
 | `exhausted N attempts` in the log | Open-Meteo was unreachable or rate-limiting; the run continues and reports the error. Use `--max-attempts` to tune. |
 | `Required module 'pytz' failed to import` | DuckDB needs `pytz` to convert `TIMESTAMPTZ` into Python datetimes; it is pinned in `requirements.txt`. |
+| `No time zone found with key UTC` or a polars `PanicException` | Python has no IANA timezone database (typical on Windows and slim images). Install `tzdata`: `pip install -r requirements.txt`. The pipeline now fails with this advice instead of a Rust panic. |
 | Auto-commit step fails | Ensure `permissions: contents: write` and that the branch is not protected. Data is still uploaded as an artefact. |
 | Day boundaries look shifted | Never query the lake from a local-timezone DuckDB session; use `src.analytics.connect()`, which pins UTC. |
 

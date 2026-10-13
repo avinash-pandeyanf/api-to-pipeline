@@ -26,6 +26,7 @@ from src.config import (
     INTEGER_MEASUREMENT_COLUMNS,
     MEASUREMENT_COLUMNS,
     RECORD_TYPE_OBSERVATION,
+    ensure_timezone_database,
 )
 from src.extract import RawPayload
 
@@ -268,6 +269,7 @@ def transform_payload(raw: RawPayload, ingested_at_utc: datetime | None = None) 
     Returns an empty frame (never raises) when the payload contains no usable hours,
     so that a single bad city cannot abort a run.
     """
+    ensure_timezone_database()
     ingested = ingested_at_utc or datetime.now(tz=timezone.utc)
     try:
         columns, skipped = _build_columns(raw, ingested)
