@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Generated artefacts that CI deliberately commits back are NOT ignored.
+# Everything here is scratch/local-only:
+_scratch/
+data/_reports/
+*.tmp
+data/**/*.tmp
+data/**/*.tmp-*
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
